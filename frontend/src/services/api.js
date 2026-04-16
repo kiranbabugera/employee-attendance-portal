@@ -15,14 +15,17 @@ API.interceptors.request.use((req) => {
   return req;
 });
 
-// ✅ Handle 401 globally
+// ✅ Handle responses & errors globally
 API.interceptors.response.use(
   (res) => res,
   (err) => {
+    console.error("API ERROR:", err.response || err.message);
+
     if (err.response?.status === 401) {
       localStorage.removeItem("token");
       window.location.href = "/login";
     }
+
     return Promise.reject(err);
   }
 );

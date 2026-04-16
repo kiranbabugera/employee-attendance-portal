@@ -7,7 +7,9 @@ import {
   Button,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+
+// ✅ USE API INSTANCE (IMPORTANT)
+import API from "../api"; // adjust path if needed
 
 function Login() {
   const navigate = useNavigate();
@@ -17,22 +19,25 @@ function Login() {
 
   const handleLogin = async () => {
     try {
-      const res = await axios.post(
-        "http://localhost:5000/api/auth/login",
-        {
-          username,
-          password,
-        }
-      );
+      // ✅ CALL BACKEND USING API
+      const res = await API.post("/auth/login", {
+        username,
+        password,
+      });
+
+      console.log("LOGIN RESPONSE:", res.data);
 
       // ✅ SAVE TOKEN
       localStorage.setItem("token", res.data.token);
 
-      alert("Login successful");
+      alert("Login successful ✅");
 
+      // ✅ REDIRECT
       navigate("/dashboard");
     } catch (err) {
-      alert("Invalid credentials");
+      console.log("LOGIN ERROR:", err.response?.data);
+
+      alert(err.response?.data?.message || "Login failed");
     }
   };
 
