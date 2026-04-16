@@ -8,18 +8,26 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
-// ✅ USE API INSTANCE (IMPORTANT)
-import API from "../api"; // adjust path if needed
+// ✅ Correct API import
+import API from "../api";
 
 function Login() {
   const navigate = useNavigate();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
+    // ✅ Basic validation
+    if (!username || !password) {
+      alert("Please enter username and password");
+      return;
+    }
+
     try {
-      // ✅ CALL BACKEND USING API
+      setLoading(true);
+
       const res = await API.post("/auth/login", {
         username,
         password,
@@ -27,17 +35,19 @@ function Login() {
 
       console.log("LOGIN RESPONSE:", res.data);
 
-      // ✅ SAVE TOKEN
+      // ✅ Save token
       localStorage.setItem("token", res.data.token);
 
       alert("Login successful ✅");
 
-      // ✅ REDIRECT
+      // ✅ Redirect
       navigate("/dashboard");
     } catch (err) {
       console.log("LOGIN ERROR:", err.response?.data);
 
       alert(err.response?.data?.message || "Login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -59,6 +69,7 @@ function Login() {
         <TextField
           fullWidth
           label="Username"
+          value={username}
           sx={{ mb: 2 }}
           onChange={(e) => setUsername(e.target.value)}
         />
@@ -67,6 +78,7 @@ function Login() {
           fullWidth
           label="Password"
           type="password"
+          value={password}
           sx={{ mb: 2 }}
           onChange={(e) => setPassword(e.target.value)}
         />
@@ -75,8 +87,9 @@ function Login() {
           fullWidth
           variant="contained"
           onClick={handleLogin}
+          disabled={loading}
         >
-          Login
+          {loading ? "Logging in..." : "Login"}
         </Button>
       </Paper>
     </Box>
