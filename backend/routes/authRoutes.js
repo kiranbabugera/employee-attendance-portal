@@ -1,39 +1,18 @@
 const express = require("express");
 const router = express.Router();
-const jwt = require("jsonwebtoken");
-const User = require("../models/User");
 
-router.post("/login", async (req, res) => {
-  try {
-    const { username, password } = req.body;
+// Import controller functions
+const { register, login } = require("../controllers/authController");
 
-    const user = await User.findOne({
-      where: { username },
-    });
+// ✅ Register route
+router.post("/register", register);
 
-    if (!user) {
-      return res.status(401).json({
-        message: "Invalid credentials",
-      });
-    }
+// ✅ Login route
+router.post("/login", login);
 
-    if (user.password !== password) {
-      return res.status(401).json({
-        message: "Invalid credentials",
-      });
-    }
-
-    const token = jwt.sign(
-      { id: user.id, username: user.username },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
-
-    res.json({ token });
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: "Login error" });
-  }
+// ✅ Optional test route (for browser check)
+router.get("/", (req, res) => {
+  res.send("Auth route working ✅");
 });
 
 module.exports = router;
