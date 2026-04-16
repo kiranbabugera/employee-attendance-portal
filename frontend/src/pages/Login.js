@@ -9,7 +9,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 // ✅ Correct API import
-import API from "../api";
+import API from "../services/api";
 
 function Login() {
   const navigate = useNavigate();
