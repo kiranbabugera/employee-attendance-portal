@@ -1,17 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
+  Paper,
+  Typography,
   TextField,
   Button,
-  Typography,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  Paper,
 } from "@mui/material";
-import API from "../services/api";
+
+import API from "../services/api"; // ✅ make sure path is correct
 
 function Leave() {
   const [reason, setReason] = useState("");
@@ -19,39 +15,35 @@ function Leave() {
   const [toDate, setToDate] = useState("");
   const [leaves, setLeaves] = useState([]);
 
-  useEffect(() => {
-    fetchLeaves();
-  }, []);
-
+  // ✅ FETCH LEAVES
   const fetchLeaves = async () => {
     try {
       const res = await API.get("/leave");
       setLeaves(res.data);
     } catch (err) {
-      console.log("Error fetching leaves");
+      console.log("FETCH ERROR:", err.response?.data);
     }
   };
 
-  const handleSubmit = async () => {
-    // ✅ VALIDATION
-    if (!reason || !fromDate || !toDate) {
-      alert("Please fill all fields");
-      return;
-    }
+  useEffect(() => {
+    fetchLeaves();
+  }, []);
 
-    if (new Date(fromDate) > new Date(toDate)) {
-      alert("From date cannot be after To date");
-      return;
-    }
-
+  // ✅ APPLY LEAVE
+  const handleApplyLeave = async () => {
     try {
-      await API.post("/leave", {
+      if (!reason || !fromDate || !toDate) {
+        alert("All fields required");
+        return;
+      }
+
+      const res = await API.post("/leave", {
         reason,
-        fromDate,
-        toDate,
+        fromDate: new Date(fromDate).toISOString().split("T")[0], // ✅ FIX
+        toDate: new Date(toDate).toISOString().split("T")[0],     // ✅ FIX
       });
 
-      alert("Leave applied successfully");
+      alert("Leave applied successfully ✅");
 
       setReason("");
       setFromDate("");
@@ -59,8 +51,8 @@ function Leave() {
 
       fetchLeaves();
     } catch (err) {
-      console.log(err);
-      alert("Leave failed");
+      console.log("ERROR:", err.response?.data);
+      alert(err.response?.data?.message || "Leave failed");
     }
   };
 
@@ -70,65 +62,47 @@ function Leave() {
         Apply Leave
       </Typography>
 
-      {/* FORM */}
       <Paper sx={{ p: 3, mb: 3 }}>
         <TextField
-          label="Reason"
           fullWidth
-          sx={{ mb: 2 }}
+          label="Reason"
           value={reason}
           onChange={(e) => setReason(e.target.value)}
+          sx={{ mb: 2 }}
         />
 
         <TextField
-          type="date"
           fullWidth
-          sx={{ mb: 2 }}
+          type="date"
           value={fromDate}
           onChange={(e) => setFromDate(e.target.value)}
+          sx={{ mb: 2 }}
         />
 
         <TextField
-          type="date"
           fullWidth
-          sx={{ mb: 2 }}
+          type="date"
           value={toDate}
           onChange={(e) => setToDate(e.target.value)}
+          sx={{ mb: 2 }}
         />
 
-        <Button variant="contained" onClick={handleSubmit}>
+        <Button variant="contained" onClick={handleApplyLeave}>
           Apply Leave
         </Button>
       </Paper>
 
-      {/* TABLE */}
-      <Typography variant="h6" mb={2}>
-        Leave History
-      </Typography>
+      {/* ✅ LEAVE HISTORY */}
+      <Typography variant="h6">Leave History</Typography>
 
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>From</TableCell>
-            <TableCell>To</TableCell>
-            <TableCell>Reason</TableCell>
-          </TableRow>
-        </TableHead>
-
-        <TableBody>
-          {leaves.map((leave) => (
-            <TableRow key={leave.id}>
-              <TableCell>
-                {new Date(leave.fromDate).toDateString()}
-              </TableCell>
-              <TableCell>
-                {new Date(leave.toDate).toDateString()}
-              </TableCell>
-              <TableCell>{leave.reason}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      {leaves.map((leave) => (
+        <Paper key={leave.id} sx={{ p: 2, mt: 1 }}>
+          <Typography>{leave.reason}</Typography>
+          <Typography>
+            {leave.fromDate} → {leave.toDate}
+          </Typography>
+        </Paper>
+      ))}
     </Box>
   );
 }
